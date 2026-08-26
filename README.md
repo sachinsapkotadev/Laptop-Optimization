@@ -25,38 +25,55 @@
 
 ## 🦠 SECURITY REPORT (Viruses & Threats)
 
+> *Section refreshed Aug 26, 2026 with live Defender telemetry (`Get-MpThreat` / `Get-MpThreatDetection`).*
+
 ### ⚠️ IMPORTANT — Malware WAS found on this laptop
 
-Windows Defender detected and **quarantined 7 threats**, mostly between **Aug 11–16, 2026**:
+Windows Defender detected **7 unique threats across 20 detection events** between **Aug 11–16, 2026**. All are quarantined/inactive, and there have been **no new detections in the last 10 days**:
 
-| # | Threat Name | Severity | Status |
-|---|---|---|---|
-| 1 | Trojan:Win32/**Wacatac.B!ml** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 2 | Trojan:Win32/**Wacatac.H!ml** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 3 | Trojan:Win32/**Sabsik.EN.D!ml** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 4 | Trojan:Win32/**Suschil!rfn** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 5 | Trojan:Win32/**Kepavll!rfn** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 6 | Trojan:MSIL/**Zilla!pz** | 🔴 Severe (5) | ❌ Quarantined (inactive) |
-| 7 | HackTool:Win32/**ExtremeInjector!pz** | 🟠 High (4) | ❌ Quarantined (inactive) |
+| # | Threat Name | Severity | Hits | Files Flagged | Status |
+|---|---|---|---|---|---|
+| 1 | Trojan:Win32/**Wacatac.B!ml** | 🔴 Severe (5) | ×6 | `Free Panel.dll`, `somente_esp_by_kityz.dll`, Recycle Bin DLL | ❌ Quarantined |
+| 2 | Trojan:Win32/**Wacatac.H!ml** | 🔴 Severe (5) | ×5 | `Free Panel.dll` (multiple copies) | ❌ Quarantined |
+| 3 | Trojan:Win32/**Kepavll!rfn** | 🔴 Severe (5) | ×3 | `Free Panel\Memory.dll`, `SHIKA HUB\Launcher-1.0.4.2.exe` | ❌ Quarantined |
+| 4 | Trojan:Win32/**Sabsik.EN.D!ml** | 🔴 Severe (5) | ×2 | `C:\Windows\Temp\Client.dll` — dropped DLL, now removed | ❌ Quarantined |
+| 5 | HackTool:Win32/**ExtremeInjector!pz** | 🟠 High (4) | ×2 | `Extreme Injector v3.exe` (from RAR temp) | ❌ Quarantined |
+| 6 | Trojan:MSIL/**Zilla!pz** | 🔴 Severe (5) | ×1 | `FF CHAMS\ABDUL X CHEATS.dll` | ❌ Quarantined |
+| 7 | Trojan:Win32/**Suschil!rfn** | 🔴 Severe (5) | ×1 | `Hacks\ASUME GI\Release.rar` | ❌ Quarantined |
 
-### 🎯 Root Cause Identified
+### 🎯 Root Cause Identified — TWO cheat folders were the sources
 
-The detections trace back to this folder on your Desktop:
+**Source 1: `Desktop\Free Panel`** — ✅ already deleted. It was the biggest source (13+ Wacatac detections). Its DLLs were actively loaded via `FateInjector.exe` on Aug 11.
+
+**Source 2: `Desktop\Hacks`** — 🔴 **STILL EXISTS on disk:**
 
 ```
 C:\Users\This PC\Desktop\Hacks\
-├── FateInjector.exe              ← Detected by Defender (Trojan carrier)
-├── Voidline 26.20.dll            ← Injected DLL (cheat module)
-├── WandEnhancer.exe
-├── Extreme Injector v3.exe/.rar  ← Known hacktool flagged by Defender
-├── ASUME GI\AwesomeGI-Main.dll   (game mod DLLs)
-├── ASUME GI\Diryavoe.exe         (35 MB unsigned executable)
-├── FF CHAMS\                     (Free Fire cheat - ESP/chams)
-├── SHIKA HUB\
-└── 6zj15nrdews.jar               (Java payload, random name = suspicious)
+├── FateInjector.exe              ← Launched infected Free Panel.dll (flagged by Defender)
+├── Voidline 26.20.dll            ← 15 MB injected cheat DLL
+├── WandEnhancer.exe              ← Unsigned executable
+├── Extreme Injector v3.rar       ← Known hacktool flagged by Defender
+├── Extreme.Injector.v3.7.3\      ← settings.xml modified Aug 14, during infection window
+├── ASUME GI\
+│   ├── Diryavoe.exe              ← 35 MB unsigned executable
+│   └── AwesomeGI-Main.dll        ← 13 MB game-mod DLL
+├── FF CHAMS\                     ← Free Fire cheat — ABDUL X CHEATS.dll was flagged (Zilla/Wacatac)
+├── SHIKA HUB\                    ← Launcher removed by Defender (Kepavll); configs remain
+└── 6zj15nrdews.jar               ← Java payload, random name = suspicious
 ```
 
-**Why this matters:** Game cheat injectors ("Hacks") are the #1 source of trojans like Wacatac, which steal passwords, browser cookies, crypto wallets, Discord tokens, and game accounts. Even if the cheat itself works, files bundled with it often contain info-stealers.
+**Why this matters:** Game cheat injectors ("Hacks") are the #1 source of trojans like Wacatac, which steal passwords, browser cookies, crypto wallets, Discord tokens, and game accounts. The `C:\Windows\Temp\Client.dll` drop on Aug 14 proves one of these tools executed with enough access to write outside your user profile.
+
+### 📊 Status Changes Since Last Report
+
+| Item | Before | Now |
+|---|---|---|
+| `Desktop\Free Panel` folder | ❌ Present (infection source #1) | ✅ **Deleted** |
+| `C:\Windows\Temp\Client.dll` | ❌ Malicious dropped DLL | ✅ **Removed** |
+| SHIKA HUB launcher | ❌ Flagged (Kepavll!rfn) | ✅ Removed by Defender |
+| `Desktop\Hacks` folder | ❌ Present | 🔴 **STILL PRESENT — delete it** |
+| Infected DLL in Recycle Bin | — | ⚠️ Detected Aug 16 — empty Recycle Bin |
+| New detections since Aug 16 | — | ✅ None (10 days clean) |
 
 ### ✅ Current Protection Status (GOOD)
 
@@ -64,21 +81,24 @@ C:\Users\This PC\Desktop\Hacks\
 |---|---|
 | Windows Defender Antivirus | ✅ Enabled |
 | Real-time protection | ✅ Enabled |
-| Behavior monitoring | ✅ Enabled |
-| Virus signatures | ✅ Updated today (Aug 26, 2026) |
+| Behavior monitoring / Network inspection | ✅ Enabled |
+| PUA (potentially unwanted app) blocking | ✅ Enabled |
+| Virus signatures | ✅ Updated today — v1.457.342.0 (Aug 26, 2026) |
 | Firewall (Domain/Private/Public) | ✅ All enabled |
 | UAC (User Account Control) | ✅ Enabled |
-| Fresh Quick Scan (today) | ✅ **Clean — no active threats** |
+| Fresh Quick Scan (today, Aug 26) | ✅ **Clean — no active threats** |
 | Last Full Scan | ⚠️ Aug 12, 2026 (14 days ago) |
+| Any threat currently active? | ✅ No — all 7 inactive/quarantined |
 
 ### 🔒 Recommended Security Actions (Priority Order)
 
-1. **DELETE the entire `Desktop\Hacks` folder** — it is the infection source. Do this even if you want to keep the cheats; they keep triggering detections.
-2. Run a **Full Scan**: Windows Security → Virus & threat protection → Scan options → **Full scan** (takes 1–2 hours).
-3. Then run **Microsoft Defender Offline scan** (reboots into a clean environment to remove rootkits).
-4. **Change important passwords from ANOTHER device** (email, bank, Discord, game accounts) — assume they may have been stolen during Aug 11–16.
-5. Empty quarantine: Windows Security → Protection history → remove all.
-6. Consider enabling **BitLocker** or device encryption (currently NOT enabled).
+1. **DELETE the entire `Desktop\Hacks` folder** — it is the last remaining infection source. Use Shift+Delete (don't just move it to the Recycle Bin).
+2. **Empty the Recycle Bin** — an infected Wacatac DLL was detected inside it on Aug 16.
+3. Run a **Full Scan**: Windows Security → Virus & threat protection → Scan options → **Full scan** (takes 1–2 hours).
+4. Then run **Microsoft Defender Offline scan** (reboots into a clean environment to remove rootkits).
+5. **Change important passwords from ANOTHER device** (email, bank, Discord, game accounts) — assume they may have been stolen during Aug 11–16.
+6. Empty quarantine: Windows Security → Protection history → remove all.
+7. Consider enabling **BitLocker** or device encryption (currently NOT enabled).
 
 ---
 
@@ -143,7 +163,8 @@ The system crashed or was hard-powered-off 3 times in one evening (5:45 PM, 5:56
 ## 🛠️ FULL OPTIMIZATION CHECKLIST
 
 ### Priority 1 — Security (do TODAY)
-- [ ] Delete `Desktop\Hacks` folder completely
+- [ ] Delete `Desktop\Hacks` folder completely (Shift+Delete, not Recycle Bin)
+- [ ] Empty the Recycle Bin (infected Wacatac DLL was found inside on Aug 16)
 - [ ] Change passwords (email/bank/Discord/games) from another device
 - [ ] Run Defender **Full Scan** (1–2 hrs), then **Offline Scan**
 - [ ] Clear Defender quarantine history
